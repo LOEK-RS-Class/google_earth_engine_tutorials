@@ -9,11 +9,13 @@ project:
 website:
   title: "Hands on GEE"
   sidebar:
-    style: "docked"
+    style: "floating"
     search: false
     contents:
       - index.qmd
       - gee_introduction.qmd
+      - sentinel2_ndvi_timeseries.qmd
+      - sentinel2_extract.qmd
 
 
 
@@ -29,4 +31,5 @@ execute:
   echo: false
   warning: false
   message: false
+  eval: false
 

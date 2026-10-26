@@ -14,3 +14,5 @@ Google Earth Engine (GEE) is a cloud computing platform with which you can acces
 Whenever the time you need to download and pre-process satellite imagery manually from e.g. the Earth Explorer is longer than to learn a few things about GEE and Java Script.
 
 ## Get Started with the [Introduction to Google Earth Engine](gee_introduction.qmd)
+
+## In the sidebar, you can find more advances example scripts.

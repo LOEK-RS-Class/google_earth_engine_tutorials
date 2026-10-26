@@ -1,0 +1,80 @@
+---
+title: Extract time series for polygon
+---
+
+
+
+```js
+// This script extract the Sentinel 2 Band Values for all the scenes in the specified time frame
+
+// --> You get multiple date values for each point
+
+// If you put in a polygon, you get all pixel in the polygon
+
+var samples = ee.FeatureCollection("projects/ee-ludwigm6/assets/luenten/extent");
+
+
+
+
+
+function maskS2clouds(image) {
+  var scl = image.select('SCL');
+  var wantedPixels = scl.gt(3).and(scl.lt(7)).or(scl.eq(1)).or(scl.eq(2));
+  return image.updateMask(wantedPixels)
+}
+
+var collection = ee.ImageCollection('COPERNICUS/S2_SR')
+    .filterBounds(samples.geometry().bounds())
+    .filterDate('2017-05-01', '2017-09-30')
+    .map(maskS2clouds)
+    .select('B2', 'B3', 'B4', 'B8')
+
+
+// iterate over all images in the image collection and
+// extract the values
+var sampledPoints = collection.map(function (image) {
+  return image.sampleRegions({
+  collection: samples,
+  geometries: true,
+  scale: 10});
+}).flatten();
+
+
+Export.table.toDrive(sampledPoints);
+```
+
+
+
+
+The result is pretty messy. In the `system.index` column, the temporal information is burried in the string.
+In the `.geo` column, the coordinates of the points (in case of polygon, all pixel) are stored besides some earth engine specific formating.
+Here is a R script for postprocessing.
+
+
+```r
+
+library(sf)
+library(tidyverse)
+
+
+f = read.csv("~/Downloads/myExportTableTask.csv")
+
+# extract time 
+f$date = str_sub(f$system.index, 1, 8) 
+
+# extract coordinates with some regex magic
+f$x = str_extract(string = f$.geo, pattern = "(?<=\\[)(.*)(?=,)") |> as.numeric()
+f$y = str_extract(string = f$.geo, pattern = "(?<=[0-9],)(.*)(?=\\])") |> as.numeric()
+
+
+f = st_as_sf(f, coords = c("x", "y"), crs = 4326)
+plot(f)
+
+
+
+
+
+
+
+```
+
